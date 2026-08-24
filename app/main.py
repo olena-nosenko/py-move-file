@@ -4,7 +4,8 @@ import shutil
 
 def move_file(command: str) -> None:
     parts = command.strip().split()
-    if len(parts) != 3 or parts[0] != "mv":
+
+    if (len(parts) != 3 or parts[0] != "mv"):
         raise ValueError(
             "Invalid command format. Expected: 'mv <source> <destination>'")
 
@@ -14,17 +15,26 @@ def move_file(command: str) -> None:
     if not os.path.isfile(source_file):
         raise FileNotFoundError(f"Source file '{source_file}' does not exist.")
 
-    if dest_file.endswith("/") or os.path.isdir(dest_file):
-        target_dir = dest_file
-        target_file = os.path.join(dest_file, os.path.basename(source_file))
+    # determine destination directory and target file path
+    if dest_file .endswith("/"):
+        target_dir = dest_file .rstrip("/")
+        target_file = os.path.join(target_dir, os.path.basename(source_file))
     else:
         target_dir = os.path.dirname(dest_file)
         target_file = dest_file
 
-    # create destination directories if path is not empty
+    # create directories recursively using os.mkdir segment by segment
     if target_dir:
-        os.makedirs(target_dir, exist_ok=True)
+        segments = target_dir.replace("\\", "/").split("/")
+        current_path = ""
+        for segment in segments:
+            if not segment:
+                continue
+            current_path = os.path.join(current_path, segment) \
+                if current_path \
+                else segment
+            if not os.path.exists(current_path):
+                os.mkdir(current_path)
 
-    # copy contents to target and clean up source file
-    shutil.copyfile(source_file, target_file)
+    shutil.copyfile(source_file , target_file)
     os.remove(source_file)
